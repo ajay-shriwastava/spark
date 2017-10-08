@@ -18,7 +18,8 @@
 package org.apache.spark.sql.execution
 
 import java.util.Locale
-
+import java.lang.Thread
+import java.lang.StackTraceElement
 import scala.collection.JavaConverters._
 
 import org.antlr.v4.runtime.{ParserRuleContext, Token}
@@ -45,6 +46,15 @@ class SparkSqlParser(conf: SQLConf) extends AbstractSqlParser {
   private val substitutor = new VariableSubstitution(conf)
 
   protected override def parse[T](command: String)(toResult: SqlBaseParser => T): T = {
+    println("Executing parse command in SparkSqlParser " + command)
+    /*
+    println("Command after subsitution in SparkSqlParser " + substitutor.substitute(command))
+    val elements = Thread.currentThread.getStackTrace()
+    for( element <- elements ){
+         println( "Calling : " + element );
+    }
+    * *
+    */
     super.parse(substitutor.substitute(command))(toResult)
   }
 }

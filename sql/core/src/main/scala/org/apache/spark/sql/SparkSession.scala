@@ -619,6 +619,9 @@ class SparkSession private(
    * @since 2.0.0
    */
   def sql(sqlText: String): DataFrame = {
+    println("\n\n****************** ================= ****************")
+    println("Calling Dataset.ofRows by passing SparkSession and sqlParser")
+    println("The parser is instance of ", sessionState.sqlParser.getClass())
     Dataset.ofRows(self, sessionState.sqlParser.parsePlan(sqlText))
   }
 

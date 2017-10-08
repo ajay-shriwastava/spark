@@ -64,11 +64,16 @@ abstract class AbstractSqlParser extends ParserInterface with Logging {
 
   /** Creates LogicalPlan for a given SQL string. */
   override def parsePlan(sqlText: String): LogicalPlan = parse(sqlText) { parser =>
+    {
+    // scalastyle:off println
+    println("Called parsePlan in ParseDriver. Calling singleStatement on parser")
+    // scalastyle:on println
     astBuilder.visitSingleStatement(parser.singleStatement()) match {
       case plan: LogicalPlan => plan
       case _ =>
         val position = Origin(None, None)
         throw new ParseException(Option(sqlText), "Unsupported SQL statement", position, position)
+    }
     }
   }
 
@@ -77,7 +82,9 @@ abstract class AbstractSqlParser extends ParserInterface with Logging {
 
   protected def parse[T](command: String)(toResult: SqlBaseParser => T): T = {
     logInfo(s"Parsing command: $command")
-
+    // scalastyle:off println
+    println("Executing parse command in ParseDriver")
+    // scalastyle:on println
     val lexer = new SqlBaseLexer(new ANTLRNoCaseStringStream(command))
     lexer.removeErrorListeners()
     lexer.addErrorListener(ParseErrorListener)

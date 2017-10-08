@@ -29,7 +29,7 @@ import org.apache.spark.sql.types.IntegerType
  *
  * There is also SparkSqlParserSuite in sql/core module for parser rules defined in sql/core module.
  */
-class PlanParserSuite extends PlanTest {
+class TrackPlanParserSuite extends PlanTest {
   import CatalystSqlParser._
   import org.apache.spark.sql.catalyst.dsl.expressions._
   import org.apache.spark.sql.catalyst.dsl.plans._
@@ -45,29 +45,11 @@ class PlanParserSuite extends PlanTest {
     }
   }
 
-  test("case insensitive") {
-    val plan = table("a").select(star())
-    assertEqual("sELEct * FroM a", plan)
-    assertEqual("select * fRoM a", plan)
-    assertEqual("SELECT * FROM a", plan)
-  }
 
-  test("explain") {
-    intercept("EXPLAIN logical SELECT 1", "Unsupported SQL statement")
-    intercept("EXPLAIN formatted SELECT 1", "Unsupported SQL statement")
-  }
 
   test("simple select query") {
-    assertEqual("select 1", OneRowRelation.select(1))
-    assertEqual("select a, b", OneRowRelation.select('a, 'b))
     assertEqual("select a, b from db.c", table("db", "c").select('a, 'b))
-    assertEqual("select a, b from db.c where x < 1", table("db", "c").where('x < 1).select('a, 'b))
-    assertEqual(
-      "select a, b from db.c having x < 1",
-      table("db", "c").select('a, 'b).where('x < 1))
-    assertEqual("select distinct a, b from db.c", Distinct(table("db", "c").select('a, 'b)))
-    assertEqual("select all a, b from db.c", table("db", "c").select('a, 'b))
-    assertEqual("select from tbl", OneRowRelation.select('from.as("tbl")))
   }
+
 
 }

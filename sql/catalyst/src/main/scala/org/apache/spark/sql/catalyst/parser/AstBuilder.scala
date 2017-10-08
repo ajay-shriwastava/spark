@@ -48,6 +48,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   import ParserUtils._
 
   protected def typedVisit[T](ctx: ParseTree): T = {
+    // scalastyle:off println
+    println("In method typedVisit with context " + ctx.getText())
+    // scalastyle:on println
     ctx.accept(this).asInstanceOf[T]
   }
 
@@ -57,6 +60,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * combine the results of the context children. In all other cases null is returned.
    */
   override def visitChildren(node: RuleNode): AnyRef = {
+    // scalastyle:off println
+    println("In method visitChildren with context " + node.getText())
+    // scalastyle:on println
     if (node.getChildCount == 1) {
       node.getChild(0).accept(this)
     } else {
@@ -65,24 +71,39 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   }
 
   override def visitSingleStatement(ctx: SingleStatementContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSingleStatement with context " + ctx.getText())
+    // scalastyle:on println
     visit(ctx.statement).asInstanceOf[LogicalPlan]
   }
 
   override def visitSingleExpression(ctx: SingleExpressionContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSingleExpression with context " + ctx.getText())
+    // scalastyle:on println
     visitNamedExpression(ctx.namedExpression)
   }
 
   override def visitSingleTableIdentifier(
       ctx: SingleTableIdentifierContext): TableIdentifier = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSingleTableIdentifier with context " + ctx.getText())
+    // scalastyle:on println
     visitTableIdentifier(ctx.tableIdentifier)
   }
 
   override def visitSingleFunctionIdentifier(
       ctx: SingleFunctionIdentifierContext): FunctionIdentifier = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSingleFunctionIdentifier with context " + ctx.getText())
+    // scalastyle:on println
     visitFunctionIdentifier(ctx.functionIdentifier)
   }
 
   override def visitSingleDataType(ctx: SingleDataTypeContext): DataType = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSingleDataType with context " + ctx.getText())
+    // scalastyle:on println
     visitSparkDataType(ctx.dataType)
   }
 
@@ -95,6 +116,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a top-level plan with Common Table Expressions.
    */
   override def visitQuery(ctx: QueryContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitQuery with context " + ctx.getText())
+    // scalastyle:on println
+    
     val query = plan(ctx.queryNoWith)
 
     // Apply CTEs
@@ -115,6 +140,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * This is only used for Common Table Expressions.
    */
   override def visitNamedQuery(ctx: NamedQueryContext): SubqueryAlias = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitNamedQuery with context " + ctx.getText())
+    // scalastyle:on println
     SubqueryAlias(ctx.name.getText, plan(ctx.query))
   }
 
@@ -135,6 +163,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * This (Hive) feature cannot be combined with set-operators.
    */
   override def visitMultiInsertQuery(ctx: MultiInsertQueryContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitMultiInsertQuery with context " + ctx.getText())
+    // scalastyle:on println
+    
     val from = visitFromClause(ctx.fromClause)
 
     // Build the insert clauses.
@@ -163,6 +195,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitSingleInsertQuery(
       ctx: SingleInsertQueryContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSingleInsertQuery with context " + ctx.getText())
+    // scalastyle:on println
     plan(ctx.queryTerm).
       // Add organization statements.
       optionalMap(ctx.queryOrganization)(withQueryResultClauses).
@@ -176,6 +211,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   private def withInsertInto(
       ctx: InsertIntoContext,
       query: LogicalPlan): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method withInsertInto with context " + ctx.getText())
+    // scalastyle:on println
     val tableIdent = visitTableIdentifier(ctx.tableIdentifier)
     val partitionKeys = Option(ctx.partitionSpec).map(visitPartitionSpec).getOrElse(Map.empty)
 
@@ -198,6 +236,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitPartitionSpec(
       ctx: PartitionSpecContext): Map[String, Option[String]] = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitPartitionSpec with context " + ctx.getText())
+    // scalastyle:on println
     val parts = ctx.partitionVal.asScala.map { pVal =>
       val name = pVal.identifier.getText
       val value = Option(pVal.constant).map(visitStringConstant)
@@ -215,6 +256,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   protected def visitNonOptionalPartitionSpec(
       ctx: PartitionSpecContext): Map[String, String] = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitNonOptionalPartitionSpec with context " + ctx.getText())
+    // scalastyle:on println
     visitPartitionSpec(ctx).mapValues(_.orNull).map(identity)
   }
 
@@ -224,6 +268,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * String -> Literal -> String.
    */
   protected def visitStringConstant(ctx: ConstantContext): String = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitStringConstant with context " + ctx.getText())
+    // scalastyle:on println
     ctx match {
       case s: StringLiteralContext => createString(s)
       case o => o.getText
@@ -239,6 +286,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
       query: LogicalPlan): LogicalPlan = withOrigin(ctx) {
     import ctx._
 
+    // scalastyle:off println
+    println("In method withQueryResultClauses with context " + ctx.getText())
+    // scalastyle:on println
+    
     // Handle ORDER BY, SORT BY, DISTRIBUTE BY, and CLUSTER BY clause.
     val withOrder = if (
       !order.isEmpty && sort.isEmpty && distributeBy.isEmpty && clusterBy.isEmpty) {
@@ -295,6 +346,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitQuerySpecification(
       ctx: QuerySpecificationContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitQuerySpecification with context " + ctx.getText())
+    // scalastyle:on println
+    
     val from = OneRowRelation.optional(ctx.fromClause) {
       visitFromClause(ctx.fromClause)
     }
@@ -313,6 +368,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
       relation: LogicalPlan): LogicalPlan = withOrigin(ctx) {
     import ctx._
 
+    // scalastyle:off println
+    println("In method withQuerySpecification with context " + ctx.getText())
+    // scalastyle:on println
     // WHERE
     def filter(ctx: BooleanExpressionContext, plan: LogicalPlan): LogicalPlan = {
       Filter(expression(ctx), plan)
@@ -422,6 +480,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * separated) relations here, these get converted into a single plan by condition-less inner join.
    */
   override def visitFromClause(ctx: FromClauseContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitFromClause with context " + ctx.getText())
+    // scalastyle:on println
     val from = ctx.relation.asScala.foldLeft(null: LogicalPlan) { (left, relation) =>
       val right = plan(relation.relationPrimary)
       val join = right.optionalMap(left)(Join(_, _, Inner, None))
@@ -441,6 +502,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * - INTERSECT [DISTINCT]
    */
   override def visitSetOperation(ctx: SetOperationContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSetOperation with context " + ctx.getText())
+    // scalastyle:on println
     val left = plan(ctx.left)
     val right = plan(ctx.right)
     val all = Option(ctx.setQuantifier()).exists(_.ALL != null)
@@ -470,6 +534,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   private def withWindows(
       ctx: WindowsContext,
       query: LogicalPlan): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method withWindows with context " + ctx.getText())
+    // scalastyle:on println
     // Collect all window specifications defined in the WINDOW clause.
     val baseWindowMap = ctx.namedWindow.asScala.map {
       wCtx =>
@@ -505,6 +572,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
       ctx: AggregationContext,
       selectExpressions: Seq[NamedExpression],
       query: LogicalPlan): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method withAggregation with context " + ctx.getText())
+    // scalastyle:on println
     val groupByExpressions = expressionList(ctx.groupingExpressions)
 
     if (ctx.GROUPING != null) {
@@ -531,6 +601,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   private def withHints(
       ctx: HintContext,
       query: LogicalPlan): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method withHints with context " + ctx.getText())
+    // scalastyle:on println
     val stmt = ctx.hintStatement
     Hint(stmt.hintName.getText, stmt.parameters.asScala.map(_.getText), query)
   }
@@ -541,6 +614,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   private def withGenerate(
       query: LogicalPlan,
       ctx: LateralViewContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method withGenerate with context " + ctx.getText())
+    // scalastyle:on println
+    
     val expressions = expressionList(ctx.expression)
     Generate(
       UnresolvedGenerator(visitFunctionName(ctx.qualifiedName), expressions),
@@ -559,6 +636,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * }}}
    */
   override def visitRelation(ctx: RelationContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitRelation with context " + ctx.getText())
+    // scalastyle:on println
+    
     withJoinRelations(plan(ctx.relationPrimary), ctx)
   }
 
@@ -566,6 +647,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Join one more [[LogicalPlan]]s to the current logical plan.
    */
   private def withJoinRelations(base: LogicalPlan, ctx: RelationContext): LogicalPlan = {
+    // scalastyle:off println
+    println("In method withJoinRelations with context " + ctx.getText())
+    // scalastyle:on println
+    
     ctx.joinRelation.asScala.foldLeft(base) { (left, join) =>
       withOrigin(join) {
         val baseJoinType = join.joinType match {
@@ -608,8 +693,13 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * - TABLESAMPLE(BUCKET x OUT OF y): Sample the table down to a 'x' divided by 'y' fraction.
    */
   private def withSample(ctx: SampleContext, query: LogicalPlan): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method withSample with context " + ctx.getText())
+    // scalastyle:on println
+    
     // Create a sampled plan if we need one.
     def sample(fraction: Double): Sample = {
+      
       // The range of fraction accepted by Sample is [0, 1]. Because Hive's block sampling
       // function takes X PERCENT as the input and the range of X is [0, 100], we need to
       // adjust the fraction.
@@ -650,6 +740,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a logical plan for a sub-query.
    */
   override def visitSubquery(ctx: SubqueryContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSubquery with context " + ctx.getText())
+    // scalastyle:on println
+    
     plan(ctx.queryNoWith)
   }
 
@@ -662,6 +756,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * }}}
    */
   override def visitTable(ctx: TableContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSubquery with context " + ctx.getText())
+    // scalastyle:on println
+    
     UnresolvedRelation(visitTableIdentifier(ctx.tableIdentifier))
   }
 
@@ -669,6 +767,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create an aliased table reference. This is typically used in FROM clauses.
    */
   override def visitTableName(ctx: TableNameContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitTableName with context " + ctx.getText())
+    // scalastyle:on println
+    
     val table = UnresolvedRelation(visitTableIdentifier(ctx.tableIdentifier))
 
     val tableWithAlias = Option(ctx.strictIdentifier).map(_.getText) match {
@@ -684,6 +786,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitTableValuedFunction(ctx: TableValuedFunctionContext)
       : LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitTableValuedFunction with context " + ctx.getText())
+    // scalastyle:on println
+    
     UnresolvedTableValuedFunction(ctx.identifier.getText, ctx.expression.asScala.map(expression))
   }
 
@@ -691,6 +797,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create an inline table (a virtual table in Hive parlance).
    */
   override def visitInlineTable(ctx: InlineTableContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitInlineTable with context " + ctx.getText())
+    // scalastyle:on println
+    
     // Get the backing expressions.
     val rows = ctx.expression.asScala.map { e =>
       expression(e) match {
@@ -718,6 +828,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * hooks.
    */
   override def visitAliasedRelation(ctx: AliasedRelationContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitAliasedRelation with context " + ctx.getText())
+    // scalastyle:on println
+    
     plan(ctx.relation)
       .optionalMap(ctx.sample)(withSample)
       .optionalMap(ctx.strictIdentifier)(aliasPlan)
@@ -729,6 +843,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * hooks.
    */
   override def visitAliasedQuery(ctx: AliasedQueryContext): LogicalPlan = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitAliasedQuery with context " + ctx.getText())
+    // scalastyle:on println
     plan(ctx.queryNoWith)
       .optionalMap(ctx.sample)(withSample)
       .optionalMap(ctx.strictIdentifier)(aliasPlan)
@@ -738,6 +855,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create an alias (SubqueryAlias) for a LogicalPlan.
    */
   private def aliasPlan(alias: ParserRuleContext, plan: LogicalPlan): LogicalPlan = {
+    // scalastyle:off println
+    println("In method aliasPlan with plan " + plan.prettyJson)
+    // scalastyle:on println
+    
     SubqueryAlias(alias.getText, plan)
   }
 
@@ -745,6 +866,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Sequence of Strings for a parenthesis enclosed alias list.
    */
   override def visitIdentifierList(ctx: IdentifierListContext): Seq[String] = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitIdentifierList with context " + ctx.getText())
+    // scalastyle:on println
+    
     visitIdentifierSeq(ctx.identifierSeq)
   }
 
@@ -752,6 +877,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Sequence of Strings for an identifier list.
    */
   override def visitIdentifierSeq(ctx: IdentifierSeqContext): Seq[String] = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitIdentifierSeq with context " + ctx.getText())
+    // scalastyle:on println
+    
     ctx.identifier.asScala.map(_.getText)
   }
 
@@ -763,6 +892,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitTableIdentifier(
       ctx: TableIdentifierContext): TableIdentifier = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitTableIdentifier with context " + ctx.getText())
+    // scalastyle:on println
+    
     TableIdentifier(ctx.table.getText, Option(ctx.db).map(_.getText))
   }
 
@@ -771,6 +904,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitFunctionIdentifier(
       ctx: FunctionIdentifierContext): FunctionIdentifier = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitFunctionIdentifier with context " + ctx.getText())
+    // scalastyle:on println
+    
     FunctionIdentifier(ctx.function.getText, Option(ctx.db).map(_.getText))
   }
 
@@ -787,6 +924,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create sequence of expressions from the given sequence of contexts.
    */
   private def expressionList(trees: java.util.List[ExpressionContext]): Seq[Expression] = {
+    // scalastyle:off println
+    println("In method expressionList with plan " + trees.toString())
+    // scalastyle:on println
+    
     trees.asScala.map(expression)
   }
 
@@ -795,6 +936,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Both un-targeted (global) and targeted aliases are supported.
    */
   override def visitStar(ctx: StarContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitStar with context " + ctx.getText())
+    // scalastyle:on println
     UnresolvedStar(Option(ctx.qualifiedName()).map(_.identifier.asScala.map(_.getText)))
   }
 
@@ -803,6 +947,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * supported.
    */
   override def visitNamedExpression(ctx: NamedExpressionContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitNamedExpression with context " + ctx.getText())
+    // scalastyle:on println
     val e = expression(ctx.expression)
     if (ctx.identifier != null) {
       Alias(e, ctx.identifier.getText)()
@@ -821,6 +968,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * performance degradations and can cause stack overflows.
    */
   override def visitLogicalBinary(ctx: LogicalBinaryContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitLogicalBinary with context " + ctx.getText())
+    // scalastyle:on println
     val expressionType = ctx.operator.getType
     val expressionCombiner = expressionType match {
       case SqlBaseParser.AND => And.apply _
@@ -866,6 +1016,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Invert a boolean expression.
    */
   override def visitLogicalNot(ctx: LogicalNotContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitLogicalNot with context " + ctx.getText())
+    // scalastyle:on println
     Not(expression(ctx.booleanExpression()))
   }
 
@@ -873,6 +1026,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a filtering correlated sub-query (EXISTS).
    */
   override def visitExists(ctx: ExistsContext): Expression = {
+    // scalastyle:off println
+    println("In method visitExists with context " + ctx.getText())
+    // scalastyle:on println
     Exists(plan(ctx.query))
   }
 
@@ -888,6 +1044,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * - Greater then or Equal: '>='
    */
   override def visitComparison(ctx: ComparisonContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitComparison with context " + ctx.getText())
+    // scalastyle:on println
     val left = expression(ctx.left)
     val right = expression(ctx.right)
     val operator = ctx.comparisonOperator().getChild(0).asInstanceOf[TerminalNode]
@@ -917,6 +1076,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * }}}
    */
   override def visitPredicated(ctx: PredicatedContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitPredicated with context " + ctx.getText())
+    // scalastyle:on println
     val e = expression(ctx.valueExpression)
     if (ctx.predicate != null) {
       withPredicate(e, ctx.predicate)
@@ -934,6 +1096,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * - IS (NOT) NULL.
    */
   private def withPredicate(e: Expression, ctx: PredicateContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitPredicated with context " + ctx.getText())
+    // scalastyle:on println
     // Invert a predicate if it has a valid NOT clause.
     def invertIfNotDefined(e: Expression): Expression = ctx.NOT match {
       case null => e
@@ -975,6 +1140,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * - Binary OR: '|'
    */
   override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitArithmeticBinary with context " + ctx.getText())
+    // scalastyle:on println
     val left = expression(ctx.left)
     val right = expression(ctx.right)
     ctx.operator.getType match {
@@ -1006,6 +1174,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * - Bitwise Not: '~'
    */
   override def visitArithmeticUnary(ctx: ArithmeticUnaryContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitArithmeticUnary with context " + ctx.getText())
+    // scalastyle:on println
     val value = expression(ctx.valueExpression)
     ctx.operator.getType match {
       case SqlBaseParser.PLUS =>
@@ -1021,6 +1192,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[Cast]] expression.
    */
   override def visitCast(ctx: CastContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitCast with context " + ctx.getText())
+    // scalastyle:on println
     Cast(expression(ctx.expression), visitSparkDataType(ctx.dataType))
   }
 
@@ -1028,6 +1202,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[First]] expression.
    */
   override def visitFirst(ctx: FirstContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitFirst with context " + ctx.getText())
+    // scalastyle:on println
     val ignoreNullsExpr = ctx.IGNORE != null
     First(expression(ctx.expression), Literal(ignoreNullsExpr)).toAggregateExpression()
   }
@@ -1036,6 +1213,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[Last]] expression.
    */
   override def visitLast(ctx: LastContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitLast with context " + ctx.getText())
+    // scalastyle:on println
     val ignoreNullsExpr = ctx.IGNORE != null
     Last(expression(ctx.expression), Literal(ignoreNullsExpr)).toAggregateExpression()
   }
@@ -1044,6 +1224,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a (windowed) Function expression.
    */
   override def visitFunctionCall(ctx: FunctionCallContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitFunctionCall with context " + ctx.getText())
+    // scalastyle:on println
     // Create the function call.
     val name = ctx.qualifiedName.getText
     val isDistinct = Option(ctx.setQuantifier()).exists(_.DISTINCT != null)
@@ -1072,6 +1255,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * they do not require the user to specify braces when calling them.
    */
   override def visitTimeFunctionCall(ctx: TimeFunctionCallContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitTimeFunctionCall with context " + ctx.getText())
+    // scalastyle:on println
     ctx.name.getType match {
       case SqlBaseParser.CURRENT_DATE =>
         CurrentDate()
@@ -1084,6 +1270,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a function database (optional) and name pair.
    */
   protected def visitFunctionName(ctx: QualifiedNameContext): FunctionIdentifier = {
+    // scalastyle:off println
+    println("In method visitFunctionName with context " + ctx.getText())
+    // scalastyle:on println
     ctx.identifier().asScala.map(_.getText) match {
       case Seq(db, fn) => FunctionIdentifier(fn, Option(db))
       case Seq(fn) => FunctionIdentifier(fn, None)
@@ -1095,6 +1284,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a reference to a window frame, i.e. [[WindowSpecReference]].
    */
   override def visitWindowRef(ctx: WindowRefContext): WindowSpecReference = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitWindowRef with context " + ctx.getText())
+    // scalastyle:on println
     WindowSpecReference(ctx.identifier.getText)
   }
 
@@ -1102,6 +1294,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a window definition, i.e. [[WindowSpecDefinition]].
    */
   override def visitWindowDef(ctx: WindowDefContext): WindowSpecDefinition = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitWindowDef with context " + ctx.getText())
+    // scalastyle:on println
     // CLUSTER BY ... | PARTITION BY ... ORDER BY ...
     val partition = ctx.partition.asScala.map(expression)
     val order = ctx.sortItem.asScala.map(visitSortItem)
@@ -1131,6 +1326,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * integer value.
    */
   override def visitFrameBound(ctx: FrameBoundContext): FrameBoundary = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitFrameBound with context " + ctx.getText())
+    // scalastyle:on println
     // We currently only allow foldable integers.
     def value: Int = {
       val e = expression(ctx.expression)
@@ -1159,6 +1357,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[CreateStruct]] expression.
    */
   override def visitRowConstructor(ctx: RowConstructorContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitRowConstructor with context " + ctx.getText())
+    // scalastyle:on println
     CreateStruct(ctx.namedExpression().asScala.map(expression))
   }
 
@@ -1167,6 +1368,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitSubqueryExpression(
       ctx: SubqueryExpressionContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSubqueryExpression with context " + ctx.getText())
+    // scalastyle:on println
     ScalarSubquery(plan(ctx.query))
   }
 
@@ -1181,6 +1385,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * }}}
    */
   override def visitSimpleCase(ctx: SimpleCaseContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSimpleCase with context " + ctx.getText())
+    // scalastyle:on println
     val e = expression(ctx.value)
     val branches = ctx.whenClause.asScala.map { wCtx =>
       (EqualTo(e, expression(wCtx.condition)), expression(wCtx.result))
@@ -1201,6 +1408,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * @param ctx the parse tree
    *    */
   override def visitSearchedCase(ctx: SearchedCaseContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSearchedCase with context " + ctx.getText())
+    // scalastyle:on println
     val branches = ctx.whenClause.asScala.map { wCtx =>
       (expression(wCtx.condition), expression(wCtx.result))
     }
@@ -1213,6 +1423,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * [[UnresolvedExtractValue]] if the parent is some expression.
    */
   override def visitDereference(ctx: DereferenceContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitDereference with context " + ctx.getText())
+    // scalastyle:on println
     val attr = ctx.fieldName.getText
     expression(ctx.base) match {
       case UnresolvedAttribute(nameParts) =>
@@ -1226,6 +1439,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create an [[UnresolvedAttribute]] expression.
    */
   override def visitColumnReference(ctx: ColumnReferenceContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitColumnReference with context " + ctx.getText())
+    // scalastyle:on println
     UnresolvedAttribute.quoted(ctx.getText)
   }
 
@@ -1233,6 +1449,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create an [[UnresolvedExtractValue]] expression, this is used for subscript access to an array.
    */
   override def visitSubscript(ctx: SubscriptContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSubscript with context " + ctx.getText())
+    // scalastyle:on println
     UnresolvedExtractValue(expression(ctx.value), expression(ctx.index))
   }
 
@@ -1242,6 +1461,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitParenthesizedExpression(
      ctx: ParenthesizedExpressionContext): Expression = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitParenthesizedExpression with context " + ctx.getText())
+    // scalastyle:on println
     expression(ctx.expression)
   }
 
@@ -1249,6 +1471,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[SortOrder]] expression.
    */
   override def visitSortItem(ctx: SortItemContext): SortOrder = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitSortItem with context " + ctx.getText())
+    // scalastyle:on println
     val direction = if (ctx.DESC != null) {
       Descending
     } else {
@@ -1272,6 +1497,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Currently Date, Timestamp and Binary typed literals are supported.
    */
   override def visitTypeConstructor(ctx: TypeConstructorContext): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitTypeConstructor with context " + ctx.getText())
+    // scalastyle:on println
     val value = string(ctx.STRING)
     val valueType = ctx.identifier.getText.toUpperCase(Locale.ROOT)
     try {
@@ -1297,6 +1525,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a NULL literal expression.
    */
   override def visitNullLiteral(ctx: NullLiteralContext): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitNullLiteral with context " + ctx.getText())
+    // scalastyle:on println
     Literal(null)
   }
 
@@ -1304,6 +1535,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Boolean literal expression.
    */
   override def visitBooleanLiteral(ctx: BooleanLiteralContext): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitBooleanLiteral with context " + ctx.getText())
+    // scalastyle:on println
     if (ctx.getText.toBoolean) {
       Literal.TrueLiteral
     } else {
@@ -1316,6 +1550,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * possible, either a BigDecimal, a Long or an Integer is returned.
    */
   override def visitIntegerLiteral(ctx: IntegerLiteralContext): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitIntegerLiteral with context " + ctx.getText())
+    // scalastyle:on println
     BigDecimal(ctx.getText) match {
       case v if v.isValidInt =>
         Literal(v.intValue())
@@ -1329,6 +1566,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a decimal literal for a regular decimal number.
    */
   override def visitDecimalLiteral(ctx: DecimalLiteralContext): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitDecimalLiteral with context " + ctx.getText())
+    // scalastyle:on println
     Literal(BigDecimal(ctx.getText).underlying())
   }
 
@@ -1336,6 +1576,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   private def numericLiteral
       (ctx: NumberContext, minValue: BigDecimal, maxValue: BigDecimal, typeName: String)
       (converter: String => Any): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method numericLiteral with context " + ctx.getText())
+    // scalastyle:on println
     val rawStrippedQualifier = ctx.getText.substring(0, ctx.getText.length - 1)
     try {
       val rawBigDecimal = BigDecimal(rawStrippedQualifier)
@@ -1354,6 +1597,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Byte Literal expression.
    */
   override def visitTinyIntLiteral(ctx: TinyIntLiteralContext): Literal = {
+    // scalastyle:off println
+    println("In method visitTinyIntLiteral with context " + ctx.getText())
+    // scalastyle:on println
     numericLiteral(ctx, Byte.MinValue, Byte.MaxValue, ByteType.simpleString)(_.toByte)
   }
 
@@ -1361,6 +1607,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Short Literal expression.
    */
   override def visitSmallIntLiteral(ctx: SmallIntLiteralContext): Literal = {
+    // scalastyle:off println
+    println("In method visitSmallIntLiteral with context " + ctx.getText())
+    // scalastyle:on println
     numericLiteral(ctx, Short.MinValue, Short.MaxValue, ShortType.simpleString)(_.toShort)
   }
 
@@ -1368,6 +1617,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Long Literal expression.
    */
   override def visitBigIntLiteral(ctx: BigIntLiteralContext): Literal = {
+    // scalastyle:off println
+    println("In method visitBigIntLiteral with context " + ctx.getText())
+    // scalastyle:on println
     numericLiteral(ctx, Long.MinValue, Long.MaxValue, LongType.simpleString)(_.toLong)
   }
 
@@ -1375,6 +1627,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Double Literal expression.
    */
   override def visitDoubleLiteral(ctx: DoubleLiteralContext): Literal = {
+    // scalastyle:off println
+    println("In method visitDoubleLiteral with context " + ctx.getText())
+    // scalastyle:on println
     numericLiteral(ctx, Double.MinValue, Double.MaxValue, DoubleType.simpleString)(_.toDouble)
   }
 
@@ -1382,6 +1637,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a BigDecimal Literal expression.
    */
   override def visitBigDecimalLiteral(ctx: BigDecimalLiteralContext): Literal = {
+    // scalastyle:off println
+    println("In method visitBigDecimalLiteral with context " + ctx.getText())
+    // scalastyle:on println
     val raw = ctx.getText.substring(0, ctx.getText.length - 2)
     try {
       Literal(BigDecimal(raw).underlying())
@@ -1395,6 +1653,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a String literal expression.
    */
   override def visitStringLiteral(ctx: StringLiteralContext): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitStringLiteral with context " + ctx.getText())
+    // scalastyle:on println
     Literal(createString(ctx))
   }
 
@@ -1406,6 +1667,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Special characters can be escaped by using Hive/C-style escaping.
    */
   private def createString(ctx: StringLiteralContext): String = {
+    // scalastyle:off println
+    println("In method createString with context " + ctx.getText())
+    // scalastyle:on println
     ctx.STRING().asScala.map(string).mkString
   }
 
@@ -1414,6 +1678,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * unit value pairs, for instance: interval 2 months 2 days.
    */
   override def visitInterval(ctx: IntervalContext): Literal = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitInterval with context " + ctx.getText())
+    // scalastyle:on println
     val intervals = ctx.intervalField.asScala.map(visitIntervalField)
     validate(intervals.nonEmpty, "at least one time unit should be given for interval literal", ctx)
     Literal(intervals.reduce(_.add(_)))
@@ -1426,6 +1693,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * - From-To unit (only 'YEAR TO MONTH' and 'DAY TO SECOND' are supported).
    */
   override def visitIntervalField(ctx: IntervalFieldContext): CalendarInterval = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitIntervalField with context " + ctx.getText())
+    // scalastyle:on println
     import ctx._
     val s = value.getText
     try {
@@ -1461,6 +1731,9 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a Spark DataType.
    */
   private def visitSparkDataType(ctx: DataTypeContext): DataType = {
+    // scalastyle:off println
+    println("In method visitSparkDataType with context " + ctx.getText())
+    // scalastyle:on println
     HiveStringType.replaceCharType(typedVisit(ctx))
   }
 
@@ -1468,6 +1741,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Resolve/create a primitive type.
    */
   override def visitPrimitiveDataType(ctx: PrimitiveDataTypeContext): DataType = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitPrimitiveDataType with context " + ctx.getText())
+    // scalastyle:on println
+    
     val dataType = ctx.identifier.getText.toLowerCase(Locale.ROOT)
     (dataType, ctx.INTEGER_VALUE().asScala.toList) match {
       case ("boolean", Nil) => BooleanType
@@ -1497,6 +1774,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a complex DataType. Arrays, Maps and Structures are supported.
    */
   override def visitComplexDataType(ctx: ComplexDataTypeContext): DataType = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitComplexDataType with context " + ctx.getText())
+    // scalastyle:on println
+    
     ctx.complex.getType match {
       case SqlBaseParser.ARRAY =>
         ArrayType(typedVisit(ctx.dataType(0)))
@@ -1511,6 +1792,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create top level table schema.
    */
   protected def createSchema(ctx: ColTypeListContext): StructType = {
+    // scalastyle:off println
+    println("In method createSchema with context " + ctx.getText())
+    // scalastyle:on println
+    
     StructType(Option(ctx).toSeq.flatMap(visitColTypeList))
   }
 
@@ -1518,6 +1803,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[StructType]] from a number of column definitions.
    */
   override def visitColTypeList(ctx: ColTypeListContext): Seq[StructField] = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitColTypeList with context " + ctx.getText())
+    // scalastyle:on println
+    
     ctx.colType().asScala.map(visitColType)
   }
 
@@ -1525,6 +1814,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a top level [[StructField]] from a column definition.
    */
   override def visitColType(ctx: ColTypeContext): StructField = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitColType with context " + ctx.getText())
+    // scalastyle:on println
+    
     import ctx._
 
     val builder = new MetadataBuilder
@@ -1550,6 +1843,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[StructType]] from a sequence of [[StructField]]s.
    */
   protected def createStructType(ctx: ComplexColTypeListContext): StructType = {
+    // scalastyle:off println
+    println("In method createStructType with context " + ctx.getText())
+    // scalastyle:on println
+    
     StructType(Option(ctx).toSeq.flatMap(visitComplexColTypeList))
   }
 
@@ -1558,6 +1855,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitComplexColTypeList(
       ctx: ComplexColTypeListContext): Seq[StructField] = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitComplexColTypeList with context " + ctx.getText())
+    // scalastyle:on println
+    
     ctx.complexColType().asScala.map(visitComplexColType)
   }
 
@@ -1565,6 +1866,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    * Create a [[StructField]] from a column definition.
    */
   override def visitComplexColType(ctx: ComplexColTypeContext): StructField = withOrigin(ctx) {
+    // scalastyle:off println
+    println("In method visitComplexColType with context " + ctx.getText())
+    // scalastyle:on println
+    
     import ctx._
     val structField = StructField(identifier.getText, typedVisit(dataType), nullable = true)
     if (STRING == null) structField else structField.withComment(string(STRING))
