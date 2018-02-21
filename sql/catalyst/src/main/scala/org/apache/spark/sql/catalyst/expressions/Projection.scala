@@ -124,6 +124,8 @@ object UnsafeProjection {
    * Returns an UnsafeProjection for given sequence of Expressions (bounded).
    */
   def create(exprs: Seq[Expression]): UnsafeProjection = {
+    println("\n=============\nInside create method, printing the sequence of expressions recieved")
+    exprs.foreach(println)
     val unsafeExprs = exprs.map(_ transform {
       case CreateNamedStruct(children) => CreateNamedStructUnsafe(children)
     })

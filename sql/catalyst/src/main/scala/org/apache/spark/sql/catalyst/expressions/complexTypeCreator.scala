@@ -338,6 +338,7 @@ trait CreateNamedStructLike extends Expression {
 case class CreateNamedStruct(children: Seq[Expression]) extends CreateNamedStructLike {
 
   override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = {
+    println("Inside doGenCode of CreateNamedStruct")
     val rowClass = classOf[GenericInternalRow].getName
     val values = ctx.freshName("values")
     ctx.addMutableState("Object[]", values, s"this.$values = null;")

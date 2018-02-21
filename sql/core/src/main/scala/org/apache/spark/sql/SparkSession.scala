@@ -34,7 +34,7 @@ import org.apache.spark.sql.catalog.Catalog
 import org.apache.spark.sql.catalyst._
 import org.apache.spark.sql.catalyst.encoders._
 import org.apache.spark.sql.catalyst.expressions.AttributeReference
-import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, Range}
+import org.apache.spark.sql.catalyst.plans.logical.{LocalRelation, Range, LogicalPlan}
 import org.apache.spark.sql.execution._
 import org.apache.spark.sql.execution.datasources.LogicalRelation
 import org.apache.spark.sql.execution.ui.SQLListener
@@ -45,7 +45,6 @@ import org.apache.spark.sql.streaming._
 import org.apache.spark.sql.types.{DataType, StructType}
 import org.apache.spark.sql.util.ExecutionListenerManager
 import org.apache.spark.util.Utils
-
 
 /**
  * The entry point to programming Spark with the Dataset and DataFrame API.
@@ -622,7 +621,10 @@ class SparkSession private(
     println("\n\n****************** ================= ****************")
     println("Calling Dataset.ofRows by passing SparkSession and sqlParser")
     println("The parser is instance of ", sessionState.sqlParser.getClass())
-    Dataset.ofRows(self, sessionState.sqlParser.parsePlan(sqlText))
+    val logicalPlan : LogicalPlan = sessionState.sqlParser.parsePlan(sqlText)
+    println("The logical plan obtained in SparkSession is ", logicalPlan.toString())
+    println("The logical plan obtained in SparkSession (JSON Format is ", logicalPlan.toJSON)
+    Dataset.ofRows(self, logicalPlan)
   }
 
   /**

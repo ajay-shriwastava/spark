@@ -299,7 +299,10 @@ object GenerateUnsafeProjection extends CodeGenerator[Seq[Expression], UnsafePro
       ctx: CodegenContext,
       expressions: Seq[Expression],
       useSubexprElimination: Boolean = false): ExprCode = {
+    println("\n=============\nInside createCode of GenerateUnsafeProjection. Calling generateExpressions")
     val exprEvals = ctx.generateExpressions(expressions, useSubexprElimination)
+    println("Generated expressions are:")
+    exprEvals.foreach(println)
     val exprTypes = expressions.map(_.dataType)
 
     val numVarLenFields = exprTypes.count {
@@ -362,6 +365,8 @@ object GenerateUnsafeProjection extends CodeGenerator[Seq[Expression], UnsafePro
   private def create(
       expressions: Seq[Expression],
       subexpressionEliminationEnabled: Boolean): UnsafeProjection = {
+    
+    println("\n=============\nInside create of GenerateUnsafeProjection. Calling newCodeGenContext and createCode")
     val ctx = newCodeGenContext()
     val eval = createCode(ctx, expressions, subexpressionEliminationEnabled)
 

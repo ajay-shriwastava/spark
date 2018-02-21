@@ -103,6 +103,8 @@ abstract class Expression extends TreeNode[Expression] {
     }.getOrElse {
       val isNull = ctx.freshName("isNull")
       val value = ctx.freshName("value")
+      println("genCode in Expression called by subclass " + this.getClass())
+      println("which in turn calls doGenCode on the given expression pssing empty ExprCode(\"\", isNull, value)" )
       val ve = doGenCode(ctx, ExprCode("", isNull, value))
       if (ve.code.nonEmpty) {
         // Add `this` in the comment.
@@ -457,11 +459,16 @@ abstract class BinaryExpression extends Expression {
       ctx: CodegenContext,
       ev: ExprCode,
       f: (String, String) => String): ExprCode = {
+    println("Generating code in Expression: nullSafeCodeGen")
     val leftGen = left.genCode(ctx)
+    println("Result of left.genCode(ctx): " + leftGen)
     val rightGen = right.genCode(ctx)
+    println("Result of right.genCode(ctx): " + rightGen)
     val resultCode = f(leftGen.value, rightGen.value)
-
+    println("Result of function " + f.getClass() + " : " + resultCode)
+    
     if (nullable) {
+      
       val nullSafeEval =
         leftGen.code + ctx.nullSafeExec(left.nullable, leftGen.isNull) {
           rightGen.code + ctx.nullSafeExec(right.nullable, rightGen.isNull) {

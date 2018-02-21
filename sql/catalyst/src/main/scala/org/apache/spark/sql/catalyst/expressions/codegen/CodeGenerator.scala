@@ -802,7 +802,9 @@ class CodegenContext {
    */
   def generateExpressions(expressions: Seq[Expression],
       doSubexpressionElimination: Boolean = false): Seq[ExprCode] = {
+    println("\n=============\nInside generateExpressions of CodeGenerator.")
     if (doSubexpressionElimination) subexpressionElimination(expressions)
+    println("Iterating through all the expressions and calling genCode on them")
     expressions.map(e => e.genCode(this))
   }
 

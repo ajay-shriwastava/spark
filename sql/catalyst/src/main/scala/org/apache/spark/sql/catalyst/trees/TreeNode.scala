@@ -545,7 +545,7 @@ abstract class TreeNode[BaseType <: TreeNode[BaseType]] extends Product {
     builder.append(prefix)
     builder.append(str)
     builder.append("\n")
-
+                                                              
     if (innerChildren.nonEmpty) {
       innerChildren.init.foreach(_.generateTreeString(
         depth + 2, lastChildren :+ children.isEmpty :+ false, builder, verbose,

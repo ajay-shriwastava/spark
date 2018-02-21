@@ -163,16 +163,24 @@ case class Add(left: Expression, right: Expression) extends BinaryArithmetic {
   }
 
   override def doGenCode(ctx: CodegenContext, ev: ExprCode): ExprCode = dataType match {
-    case dt: DecimalType =>
+    case dt: DecimalType => {
+      println("\n=============\nInside doGenCode, calling defineCodeGen of Add for case of DecimalType")
       defineCodeGen(ctx, ev, (eval1, eval2) => s"$eval1.$$plus($eval2)")
-    case ByteType | ShortType =>
-      defineCodeGen(ctx, ev,
-        (eval1, eval2) => s"(${ctx.javaType(dataType)})($eval1 $symbol $eval2)")
-    case CalendarIntervalType =>
+    }
+    case ByteType | ShortType => {
+      println("\n=============\nInside doGenCode, calling defineCodeGen of Add for case of ByteType and ShortType")
+      defineCodeGen(ctx, ev, (eval1, eval2) => s"(${ctx.javaType(dataType)})($eval1 $symbol $eval2)")
+    }
+    case CalendarIntervalType => {
+      println("\n=============\nInside doGenCode, calling defineCodeGen of Add for case of Calendar Interval Type")
       defineCodeGen(ctx, ev, (eval1, eval2) => s"$eval1.add($eval2)")
-    case _ =>
+    }
+    case _ => {
+      println("\n=============\nInside doGenCode, calling defineCodeGen of Add for case of _")
       defineCodeGen(ctx, ev, (eval1, eval2) => s"$eval1 $symbol $eval2")
+    }
   }
+  
 }
 
 @ExpressionDescription(

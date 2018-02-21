@@ -44,14 +44,21 @@ trait ExpressionEvalHelper extends GeneratorDrivenPropertyChecks {
 
   protected def checkEvaluation(
       expression: => Expression, expected: Any, inputRow: InternalRow = EmptyRow): Unit = {
+    println("\n=============\nInside checkEvaluation. Getting Java Serializer")
     val serializer = new JavaSerializer(new SparkConf()).newInstance
+    println("\n=============\nSerializing and deserializing the expression for some reason serializer.deserialize(serializer.serialize(expression)")
     val expr: Expression = serializer.deserialize(serializer.serialize(expression))
+    println("\n=============\nGetting catalyst value for expected: CatalystTypeConverters.convertToCatalyst(expected)")
     val catalystValue = CatalystTypeConverters.convertToCatalyst(expected)
+    println("\n=============\nChecking Evaluation without generating code : checkEvaluationWithoutCodegen(expr, catalystValue, inputRow)")
     checkEvaluationWithoutCodegen(expr, catalystValue, inputRow)
-    checkEvaluationWithGeneratedMutableProjection(expr, catalystValue, inputRow)
+    println("\n=============\nChecking evaluation with generated mutable projection : checkEvaluationWithGeneratedMutableProjection(expr, catalystValue, inputRow)")
+    //checkEvaluationWithGeneratedMutableProjection(expr, catalystValue, inputRow)
     if (GenerateUnsafeProjection.canSupport(expr.dataType)) {
+      println("\n=============\nChecking evaluation with unsafe projection : checkEvalutionWithUnsafeProjection(expr, catalystValue, inputRow)")
       checkEvalutionWithUnsafeProjection(expr, catalystValue, inputRow)
     }
+    println("\n=============\nChecking evaluation with optimization : checkEvaluationWithOptimization(expr, catalystValue, inputRow)")
     checkEvaluationWithOptimization(expr, catalystValue, inputRow)
   }
 
@@ -154,6 +161,8 @@ trait ExpressionEvalHelper extends GeneratorDrivenPropertyChecks {
     // SPARK-16489 Explicitly doing code generation twice so code gen will fail if
     // some expression is reusing variable names across different instances.
     // This behavior is tested in ExpressionEvalHelperSuite.
+    println("\n=============\nInside checkEvalutionWithUnsafeProjection. Generating plan by calling generateProject")
+    println("Nested method calls: generateProject --> UnsafeProjection.create --> Alias.")
     val plan = generateProject(
       UnsafeProjection.create(
         Alias(expression, s"Optimized($expression)1")() ::

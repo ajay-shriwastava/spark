@@ -49,7 +49,7 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
 
   protected def typedVisit[T](ctx: ParseTree): T = {
     // scalastyle:off println
-    println("In method typedVisit with context " + ctx.getText())
+    println("In method typedVisit with context " + ctx.getClass() + " and Text: " + ctx.getText())
     // scalastyle:on println
     ctx.accept(this).asInstanceOf[T]
   }
@@ -482,7 +482,11 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   override def visitFromClause(ctx: FromClauseContext): LogicalPlan = withOrigin(ctx) {
     // scalastyle:off println
     println("In method visitFromClause with context " + ctx.getText())
+    for ( rel <- ctx.relation.asScala){
+      println("In method visitFromClause rel.getText() " + rel.getText() + rel.relationPrimary())
+    }
     // scalastyle:on println
+
     val from = ctx.relation.asScala.foldLeft(null: LogicalPlan) { (left, relation) =>
       val right = plan(relation.relationPrimary)
       val join = right.optionalMap(left)(Join(_, _, Inner, None))
@@ -508,6 +512,11 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
     val left = plan(ctx.left)
     val right = plan(ctx.right)
     val all = Option(ctx.setQuantifier()).exists(_.ALL != null)
+    // scalastyle:off println
+    println("In method visitSetOperation with Plan left " + left.toString())
+    println("In method visitSetOperation with Plan left " + right.toString())
+    println("In method visitSetOperation with Plan left " + all.toString())
+    // scalastyle:on println
     ctx.operator.getType match {
       case SqlBaseParser.UNION if all =>
         Union(left, right)

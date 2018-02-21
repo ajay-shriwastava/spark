@@ -21,7 +21,7 @@ class TrackSQLQuerySuite extends QueryTest with SharedSQLContext {
   import testImplicits._
 
   setupTestData()
-
+  
    test("Track SQL Execution") {
     checkAnswer(
       sql(

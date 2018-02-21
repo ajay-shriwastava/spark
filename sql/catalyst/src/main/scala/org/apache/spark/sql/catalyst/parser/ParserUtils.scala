@@ -179,8 +179,14 @@ object ParserUtils {
      */
     def optional(ctx: AnyRef)(f: => LogicalPlan): LogicalPlan = {
       if (ctx != null) {
+        // scalastyle:off println
+        println("In method EnhancedLogicalPlan with plans " + f.foreach(println))
+        // scalastyle:on println
         f
       } else {
+        // scalastyle:off println
+        println("In method EnhancedLogicalPlan with plans " + plan.toString())
+        // scalastyle:on println
         plan
       }
     }
@@ -191,8 +197,14 @@ object ParserUtils {
      */
     def optionalMap[C](ctx: C)(f: (C, LogicalPlan) => LogicalPlan): LogicalPlan = {
       if (ctx != null) {
+        // scalastyle:off println
+        println("In method EnhancedLogicalPlan with plan " + f.toString() + " and ctx " + ctx)
+        // scalastyle:on println
         f(ctx, plan)
       } else {
+        // scalastyle:off println
+        println("In method EnhancedLogicalPlan with plans " + plan.toString())
+        // scalastyle:on println
         plan
       }
     }

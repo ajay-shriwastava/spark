@@ -28,6 +28,7 @@ import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.catalyst.trees.Origin
 import org.apache.spark.sql.types.{DataType, StructType}
 
+
 /**
  * Base SQL parsing infrastructure.
  */
@@ -66,10 +67,18 @@ abstract class AbstractSqlParser extends ParserInterface with Logging {
   override def parsePlan(sqlText: String): LogicalPlan = parse(sqlText) { parser =>
     {
     // scalastyle:off println
-    println("Called parsePlan in ParseDriver. Calling singleStatement on parser")
+      val ssc   =  parser.singleStatement()
+        
+      println("tree :" + ssc.toStringTree(parser))
+      
+      println("Called parsePlan in ParseDriver. Calling visitSingleStatement on astBuilder \n, "
+            + "getting SingleStatementContext by calling parser.singleStatement()")
     // scalastyle:on println
-    astBuilder.visitSingleStatement(parser.singleStatement()) match {
-      case plan: LogicalPlan => plan
+    astBuilder.visitSingleStatement(ssc) match {
+      case plan: LogicalPlan => {
+        println("Logical plan is " + plan.toJSON)
+        plan
+      }
       case _ =>
         val position = Origin(None, None)
         throw new ParseException(Option(sqlText), "Unsupported SQL statement", position, position)
