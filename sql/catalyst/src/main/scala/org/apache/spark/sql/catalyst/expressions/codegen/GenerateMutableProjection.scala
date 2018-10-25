@@ -19,7 +19,7 @@ package org.apache.spark.sql.catalyst.expressions.codegen
 
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.expressions.aggregate.NoOp
-
+import java.io._
 // MutableProjection is not accessible in Java
 abstract class BaseMutableProjection extends MutableProjection
 
@@ -141,7 +141,12 @@ object GenerateMutableProjection extends CodeGenerator[Seq[Expression], MutableP
     val code = CodeFormatter.stripOverlappingComments(
       new CodeAndComment(codeBody, ctx.getPlaceHolderToComments()))
     logDebug(s"code for ${expressions.mkString(",")}:\n${CodeFormatter.format(code)}")
-
+    val pw:PrintWriter = new PrintWriter(new File("/Users/ajay/workspace/opensource/spark/spark/sql/core/generated/GenerateMutableProjection" 
+        + System.currentTimeMillis() + ".scala"));
+    pw.write("/*" + s"code for ${expressions.mkString(",")}:*/\n");
+    pw.write(s"${CodeFormatter.format(code)}");
+    pw.close();
+    
     val c = CodeGenerator.compile(code)
     c.generate(ctx.references.toArray).asInstanceOf[MutableProjection]
   }

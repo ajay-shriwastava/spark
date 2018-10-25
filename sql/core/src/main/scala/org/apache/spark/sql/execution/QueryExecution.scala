@@ -48,7 +48,7 @@ class QueryExecution(val sparkSession: SparkSession, val logical: LogicalPlan) {
   def assertAnalyzed(): Unit = {
     // Analyzer is invoked outside the try block to avoid calling it again from within the
     // catch block below.
-    println("analyzed being called inside the QueryExecution ")
+    println("assertAnalyzed being called inside the QueryExecution ")
     analyzed
     try {
       sparkSession.sessionState.analyzer.checkAnalysis(analyzed)
@@ -78,7 +78,10 @@ class QueryExecution(val sparkSession: SparkSession, val logical: LogicalPlan) {
     sparkSession.sharedState.cacheManager.useCachedData(analyzed)
   }
 
-  lazy val optimizedPlan: LogicalPlan = sparkSession.sessionState.optimizer.execute(withCachedData)
+  lazy val optimizedPlan: LogicalPlan = {
+    println("Executing rules defined in optimizer " + sparkSession.sessionState.optimizer.getClass())
+    sparkSession.sessionState.optimizer.execute(withCachedData)
+  }
 
   lazy val sparkPlan: SparkPlan = {
     SparkSession.setActiveSession(sparkSession)

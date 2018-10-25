@@ -23,7 +23,7 @@ import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.expressions.aggregate.NoOp
 import org.apache.spark.sql.catalyst.util.{ArrayBasedMapData, GenericArrayData}
 import org.apache.spark.sql.types._
-
+import java.io._
 /**
  * Java can not access Projection (in package object)
  */
@@ -190,7 +190,12 @@ object GenerateSafeProjection extends CodeGenerator[Seq[Expression], Projection]
     val code = CodeFormatter.stripOverlappingComments(
       new CodeAndComment(codeBody, ctx.getPlaceHolderToComments()))
     logDebug(s"code for ${expressions.mkString(",")}:\n${CodeFormatter.format(code)}")
-
+    val pw:PrintWriter = new PrintWriter(new File("/Users/ajay/workspace/opensource/spark/spark/sql/core/generated/GenerateSafeProjection" 
+        + System.currentTimeMillis() + ".scala"));
+    pw.write("/*" + s"code for ${expressions.mkString(",")}:*/\n");
+    pw.write(s"${CodeFormatter.format(code)}");
+    pw.close();
+    
     val c = CodeGenerator.compile(code)
     val resultRow = new SpecificInternalRow(expressions.map(_.dataType))
     c.generate(ctx.references.toArray :+ resultRow).asInstanceOf[Projection]

@@ -20,7 +20,7 @@ package org.apache.spark.sql.catalyst.expressions.codegen
 import org.apache.spark.sql.catalyst.expressions.{Attribute, UnsafeRow}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.unsafe.Platform
-
+import java.io._
 abstract class UnsafeRowJoiner {
   def join(row1: UnsafeRow, row2: UnsafeRow): UnsafeRow
 }
@@ -195,7 +195,12 @@ object GenerateUnsafeRowJoiner extends CodeGenerator[(StructType, StructType), U
      """.stripMargin
     val code = CodeFormatter.stripOverlappingComments(new CodeAndComment(codeBody, Map.empty))
     logDebug(s"SpecificUnsafeRowJoiner($schema1, $schema2):\n${CodeFormatter.format(code)}")
-
+    val pw:PrintWriter = new PrintWriter(new File("/Users/ajay/workspace/opensource/spark/spark/sql/core/generated/GenerateUnsafeRowJoiner" 
+        + System.currentTimeMillis() + ".scala"));
+    pw.write("/*" + s"SpecificUnsafeRowJoiner($schema1, $schema2):*/\n");
+    pw.write(s"${CodeFormatter.format(code)}");
+    pw.close();
+    
     val c = CodeGenerator.compile(code)
     c.generate(Array.empty).asInstanceOf[UnsafeRowJoiner]
   }

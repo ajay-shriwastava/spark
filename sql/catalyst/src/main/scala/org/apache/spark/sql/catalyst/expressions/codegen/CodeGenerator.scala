@@ -886,7 +886,10 @@ abstract class CodeGenerator[InType <: AnyRef, OutType <: AnyRef] extends Loggin
     generate(bind(expressions, inputSchema))
 
   /** Generates the requested evaluator given already bound expression(s). */
-  def generate(expressions: InType): OutType = create(canonicalize(expressions))
+  def generate(expressions: InType): OutType = {
+    println("\n=============\nInside generate of CodeGenerator. Calling create now")
+    create(canonicalize(expressions))
+  }
 
   /**
    * Create a new codegen context for expression evaluator, used to store those

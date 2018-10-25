@@ -69,7 +69,7 @@ abstract class RuleExecutor[TreeType <: TreeNode[_]] extends Logging {
    * using the defined execution strategy. Within each batch, rules are also executed serially.
    */
   def execute(plan: TreeType): TreeType = {
-    println("Inside execute of RuleExecutor which will execute the batches of rules serially as defined by the subclass")
+    println("Inside execute of RuleExecutor which will execute the batches of rules serially as defined by the subclass" + this.getClass())
     var curPlan = plan
 
     batches.foreach { batch =>

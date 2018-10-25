@@ -166,7 +166,8 @@ abstract class QueryTest extends PlanTest {
           throw ae
         }
     }
-
+    
+    println("Inside checkAnswer DataSet recieved " + analyzedDF)
     assertEmptyMissingInput(analyzedDF)
 
     QueryTest.checkAnswer(analyzedDF, expectedAnswer) match {
@@ -229,10 +230,13 @@ abstract class QueryTest extends PlanTest {
    * Asserts that a given [[Dataset]] does not have missing inputs in all the analyzed plans.
    */
   def assertEmptyMissingInput(query: Dataset[_]): Unit = {
+    println("Inside assertEmptyMissingInput in QueryTest Calling query.queryExecution.analyzed")
     assert(query.queryExecution.analyzed.missingInput.isEmpty,
       s"The analyzed logical plan has missing inputs:\n${query.queryExecution.analyzed}")
+    println("Inside assertEmptyMissingInput in QueryTest Calling query.queryExecution.optimizedPlan")
     assert(query.queryExecution.optimizedPlan.missingInput.isEmpty,
       s"The optimized logical plan has missing inputs:\n${query.queryExecution.optimizedPlan}")
+    println("Inside assertEmptyMissingInput in QueryTest Calling query.queryExecution.executedPlan") 
     assert(query.queryExecution.executedPlan.missingInput.isEmpty,
       s"The physical plan has missing inputs:\n${query.queryExecution.executedPlan}")
   }

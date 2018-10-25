@@ -58,6 +58,8 @@ abstract class QueryPlanner[PhysicalPlan <: TreeNode[PhysicalPlan]] {
   def plan(plan: LogicalPlan): Iterator[PhysicalPlan] = {
     // Obviously a lot to do here still...
 
+    println("plan called in Query planner to convert the LOGcal To Physical plan" + this.getClass())
+    
     // Collect physical plan candidates.
     val candidates = strategies.iterator.flatMap(_(plan))
 

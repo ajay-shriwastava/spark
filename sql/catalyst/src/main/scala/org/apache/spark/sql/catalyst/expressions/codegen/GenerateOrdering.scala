@@ -27,7 +27,7 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.util.Utils
-
+import java.io._
 /**
  * Inherits some default implementation for Java from `Ordering[Row]`
  */
@@ -184,7 +184,11 @@ object GenerateOrdering extends CodeGenerator[Seq[SortOrder], Ordering[InternalR
     val code = CodeFormatter.stripOverlappingComments(
       new CodeAndComment(codeBody, ctx.getPlaceHolderToComments()))
     logDebug(s"Generated Ordering by ${ordering.mkString(",")}:\n${CodeFormatter.format(code)}")
-
+    val pw:PrintWriter = new PrintWriter(new File("/Users/ajay/workspace/opensource/spark/spark/sql/core/generated/GenerateMutableProjection" 
+        + System.currentTimeMillis() + ".scala"));
+    pw.write(s"${CodeFormatter.format(code)}");
+    pw.close();
+    
     CodeGenerator.compile(code).generate(ctx.references.toArray).asInstanceOf[BaseOrdering]
   }
 }

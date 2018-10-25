@@ -19,6 +19,7 @@ package org.apache.spark.sql.catalyst.expressions.codegen
 
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.types._
+import java.io._
 
 /**
  * Generates a [[Projection]] that returns an [[UnsafeRow]].
@@ -346,8 +347,11 @@ object GenerateUnsafeProjection extends CodeGenerator[Seq[Expression], UnsafePro
     ExprCode(code, "false", result)
   }
 
-  protected def canonicalize(in: Seq[Expression]): Seq[Expression] =
-    in.map(ExpressionCanonicalizer.execute)
+  protected def canonicalize(in: Seq[Expression]): Seq[Expression] = {
+        println("\n=============\nInside canonicalize of GenerateUnsafeProjection. Returning expressions after running map on them")
+        in.map(ExpressionCanonicalizer.execute)
+    }
+
 
   protected def bind(in: Seq[Expression], inputSchema: Seq[Attribute]): Seq[Expression] =
     in.map(BindReferences.bindReference(_, inputSchema))
@@ -355,11 +359,13 @@ object GenerateUnsafeProjection extends CodeGenerator[Seq[Expression], UnsafePro
   def generate(
       expressions: Seq[Expression],
       subexpressionEliminationEnabled: Boolean): UnsafeProjection = {
+    println("\n=============\nInside generate of GenerateUnsafeProjection.")
     create(canonicalize(expressions), subexpressionEliminationEnabled)
   }
 
   protected def create(references: Seq[Expression]): UnsafeProjection = {
-    create(references, subexpressionEliminationEnabled = false)
+   println("\n=============\nInside create of GenerateUnsafeProjection. Calling create with addiotional param of false")
+   create(references, subexpressionEliminationEnabled = false)
   }
 
   private def create(
@@ -406,7 +412,11 @@ object GenerateUnsafeProjection extends CodeGenerator[Seq[Expression], UnsafePro
     val code = CodeFormatter.stripOverlappingComments(
       new CodeAndComment(codeBody, ctx.getPlaceHolderToComments()))
     logDebug(s"code for ${expressions.mkString(",")}:\n${CodeFormatter.format(code)}")
-
+    val pw:PrintWriter = new PrintWriter(new File("/Users/ajay/workspace/opensource/spark/spark/sql/core/generated/GenerateUnsafeProjection" 
+        + System.currentTimeMillis() + ".scala"));
+    pw.write("/*" + s"code for ${expressions.mkString(",")}:*/\n");
+    pw.write(s"${CodeFormatter.format(code)}");
+    pw.close();
     val c = CodeGenerator.compile(code)
     c.generate(ctx.references.toArray).asInstanceOf[UnsafeProjection]
   }

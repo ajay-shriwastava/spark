@@ -51,11 +51,13 @@ trait ExpressionEvalHelper extends GeneratorDrivenPropertyChecks {
     println("\n=============\nGetting catalyst value for expected: CatalystTypeConverters.convertToCatalyst(expected)")
     val catalystValue = CatalystTypeConverters.convertToCatalyst(expected)
     println("\n=============\nChecking Evaluation without generating code : checkEvaluationWithoutCodegen(expr, catalystValue, inputRow)")
-    checkEvaluationWithoutCodegen(expr, catalystValue, inputRow)
+    //checkEvaluationWithoutCodegen(expr, catalystValue, inputRow)
     println("\n=============\nChecking evaluation with generated mutable projection : checkEvaluationWithGeneratedMutableProjection(expr, catalystValue, inputRow)")
     //checkEvaluationWithGeneratedMutableProjection(expr, catalystValue, inputRow)
     if (GenerateUnsafeProjection.canSupport(expr.dataType)) {
       println("\n=============\nChecking evaluation with unsafe projection : checkEvalutionWithUnsafeProjection(expr, catalystValue, inputRow)")
+      println("parameters are 1. expression : " + expression + " of type class " + expression.getClass() + 
+          "\n expected :" + expected + " type class " + expected.getClass() + "\n inputRow:  " + inputRow)
       checkEvalutionWithUnsafeProjection(expr, catalystValue, inputRow)
     }
     println("\n=============\nChecking evaluation with optimization : checkEvaluationWithOptimization(expr, catalystValue, inputRow)")

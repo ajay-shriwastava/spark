@@ -73,6 +73,7 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
   override def visitSingleStatement(ctx: SingleStatementContext): LogicalPlan = withOrigin(ctx) {
     // scalastyle:off println
     println("In method visitSingleStatement with context " + ctx.getText())
+    println("The class of ctx.statement is " + ctx.statement().getClass())
     // scalastyle:on println
     visit(ctx.statement).asInstanceOf[LogicalPlan]
   }
@@ -481,9 +482,10 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitFromClause(ctx: FromClauseContext): LogicalPlan = withOrigin(ctx) {
     // scalastyle:off println
-    println("In method visitFromClause with context " + ctx.getText())
+    println("In method visitFromClause with context " + ctx.getText() + " size of list " + ctx.relation.size())
     for ( rel <- ctx.relation.asScala){
-      println("In method visitFromClause rel.getText() " + rel.getText() + rel.relationPrimary())
+      println("In method visitFromClause rel.getText() " + rel.getText() +  " " + 
+          rel.relationPrimary().getText() + rel.getClass())
     }
     // scalastyle:on println
 
@@ -777,11 +779,13 @@ class AstBuilder extends SqlBaseBaseVisitor[AnyRef] with Logging {
    */
   override def visitTableName(ctx: TableNameContext): LogicalPlan = withOrigin(ctx) {
     // scalastyle:off println
-    println("In method visitTableName with context " + ctx.getText())
+    println("In method visitTableName with context " + ctx.getText() + " and identifier "
+        + ctx.tableIdentifier.getText() + " strict identifier " + ctx.strictIdentifier())
     // scalastyle:on println
     
     val table = UnresolvedRelation(visitTableIdentifier(ctx.tableIdentifier))
 
+    println("table is " + table.getClass + " " + table.toString())
     val tableWithAlias = Option(ctx.strictIdentifier).map(_.getText) match {
       case Some(strictIdentifier) =>
         SubqueryAlias(strictIdentifier, table)

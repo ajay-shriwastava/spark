@@ -619,11 +619,11 @@ class SparkSession private(
    */
   def sql(sqlText: String): DataFrame = {
     println("\n\n****************** ================= ****************")
-    println("Calling Dataset.ofRows by passing SparkSession and sqlParser")
+    println("Calling sessionState.sqlParser.parsePlan(sqlText) to get the logical plan")
     println("The parser is instance of ", sessionState.sqlParser.getClass())
     val logicalPlan : LogicalPlan = sessionState.sqlParser.parsePlan(sqlText)
     println("The logical plan obtained in SparkSession is ", logicalPlan.toString())
-    println("The logical plan obtained in SparkSession (JSON Format is ", logicalPlan.toJSON)
+    println("Calling Dataset.ofRows by passing SparkSession and logicalPlan")
     Dataset.ofRows(self, logicalPlan)
   }
 

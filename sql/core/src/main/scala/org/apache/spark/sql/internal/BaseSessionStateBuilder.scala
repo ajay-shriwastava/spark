@@ -233,6 +233,7 @@ abstract class BaseSessionStateBuilder(
    * Create a query execution object.
    */
   protected def createQueryExecution: LogicalPlan => QueryExecution = { plan =>
+    println("New instance of QueryExecution is getting created in " + this.getClass())
     new QueryExecution(session, plan)
   }
 
