@@ -109,6 +109,7 @@ private[netty] class NettyRpcEnv(
   }
 
   def startServer(bindAddress: String, port: Int): Unit = {
+    println("===NettyRpcEnv:startServer starting server at bind Address: " + bindAddress + " and port " + port + "\n")
     val bootstraps: java.util.List[TransportServerBootstrap] =
       if (securityManager.isAuthenticationEnabled()) {
         java.util.Arrays.asList(new AuthServerBootstrap(transportConf, securityManager))
@@ -116,6 +117,7 @@ private[netty] class NettyRpcEnv(
         java.util.Collections.emptyList()
       }
     server = transportContext.createServer(bindAddress, port, bootstraps)
+    println("===NettyRpcEnv:startServer calling dispatcher.registerRpcEndpoint " + "\n")
     dispatcher.registerRpcEndpoint(
       RpcEndpointVerifier.NAME, new RpcEndpointVerifier(this, dispatcher))
   }

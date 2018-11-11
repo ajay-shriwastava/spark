@@ -72,6 +72,7 @@ import org.apache.spark.util._
  */
 class SparkContext(config: SparkConf) extends Logging {
 
+  println("===SparkContext:Primary Constructor (Class Body) Spark Context is being instantiated \n")
   // The call site where this SparkContext was constructed.
   private val creationSite: CallSite = Utils.getCallSite()
 
@@ -143,6 +144,7 @@ class SparkContext(config: SparkConf) extends Logging {
       jars: Seq[String] = Nil,
       environment: Map[String, String] = Map()) = {
     this(SparkContext.updatedConf(new SparkConf(), master, appName, sparkHome, jars, environment))
+    println("===SparkContext:Finishing Auxiliary Constructor this(master:String, appName:String, sparkHome:String, jars: Seq[String], environment: Map[String, String]) \n")
   }
 
   // NOTE: The below constructors could be consolidated using default arguments. Due to
@@ -155,8 +157,11 @@ class SparkContext(config: SparkConf) extends Logging {
    * @param master Cluster URL to connect to (e.g. mesos://host:port, spark://host:port, local[4]).
    * @param appName A name for your application, to display on the cluster web UI.
    */
-  private[spark] def this(master: String, appName: String) =
+  private[spark] def this(master: String, appName: String) = {
     this(master, appName, null, Nil, Map())
+    println("===SparkContext:Finishing Auxiliary Constructor this(master: String, appName: String) \n")
+  }
+    
 
   /**
    * Alternative constructor that allows setting common Spark properties directly
@@ -254,6 +259,7 @@ class SparkContext(config: SparkConf) extends Logging {
       conf: SparkConf,
       isLocal: Boolean,
       listenerBus: LiveListenerBus): SparkEnv = {
+    println("===SparkContext:createSparkEnv Calling SparkEnv.createDriverEnv(conf, isLocal, listenerBus, SparkContext.numDriverCores(master))\n")
     SparkEnv.createDriverEnv(conf, isLocal, listenerBus, SparkContext.numDriverCores(master))
   }
 
@@ -291,9 +297,12 @@ class SparkContext(config: SparkConf) extends Logging {
   // Environment variables to pass to our executors.
   private[spark] val executorEnvs = HashMap[String, String]()
 
+  
   // Set SPARK_USER for user who is running SparkContext.
+  println("===SparkContext:Primary Constructor (Class Body) Calling Utils.getCurrentUserName to get the sparkUser \n")
   val sparkUser = Utils.getCurrentUserName()
-
+  println("===SparkContext:Primary Constructor (Class Body) After Utils.getCurrentUserName got sparkUser" + sparkUser + "\n")
+  
   private[spark] def schedulerBackend: SchedulerBackend = _schedulerBackend
 
   private[spark] def taskScheduler: TaskScheduler = _taskScheduler
@@ -369,12 +378,16 @@ class SparkContext(config: SparkConf) extends Logging {
   }
 
   try {
+    println("===SparkContext:Primary Constructor (Class Body) Spark Context cloning the congifuration \n")
+  
     _conf = config.clone()
     _conf.validateSettings()
 
+    println("===SparkContext:Primary Constructor (Class Body) validating spark.master\n")
     if (!_conf.contains("spark.master")) {
       throw new SparkException("A master URL must be set in your configuration")
     }
+    println("===SparkContext:Primary Constructor (Class Body) validating spark.app.name\n")
     if (!_conf.contains("spark.app.name")) {
       throw new SparkException("An application name must be set in your configuration")
     }
@@ -425,10 +438,13 @@ class SparkContext(config: SparkConf) extends Logging {
 
     // "_jobProgressListener" should be set up before creating SparkEnv because when creating
     // "SparkEnv", some messages will be posted to "listenerBus" and we should not miss them.
+    println("===SparkContext:Primary Constructor (Class Body) Setting up JobProgressListener\n")
     _jobProgressListener = new JobProgressListener(_conf)
+    println("===SparkContext:Primary Constructor (Class Body) Adding JobProgressListener to listener bus\n")
     listenerBus.addListener(jobProgressListener)
 
     // Create the Spark execution environment (cache, map output tracker, etc)
+    println("===SparkContext:Primary Constructor (Class Body) Creating Spark Environment\n")
     _env = createSparkEnv(_conf, isLocal, listenerBus)
     SparkEnv.set(_env)
 
@@ -438,6 +454,7 @@ class SparkContext(config: SparkConf) extends Logging {
       _conf.set("spark.repl.class.uri", replUri)
     }
 
+    println("===SparkContext:Primary Constructor (Class Body) Creating SparkStatusTracker\n")
     _statusTracker = new SparkStatusTracker(this)
 
     _progressBar =
@@ -470,6 +487,8 @@ class SparkContext(config: SparkConf) extends Logging {
       files.foreach(addFile)
     }
 
+    println("===SparkContext:Primary Constructor getting executor Memory\n")
+    
     _executorMemory = _conf.getOption("spark.executor.memory")
       .orElse(Option(System.getenv("SPARK_EXECUTOR_MEMORY")))
       .orElse(Option(System.getenv("SPARK_MEM"))
@@ -492,11 +511,14 @@ class SparkContext(config: SparkConf) extends Logging {
     executorEnvs ++= _conf.getExecutorEnv
     executorEnvs("SPARK_USER") = sparkUser
 
+    println("===SparkContext:Primary Constructor getting executor Memory\n")
     // We need to register "HeartbeatReceiver" before "createTaskScheduler" because Executor will
     // retrieve "HeartbeatReceiver" in the constructor. (SPARK-6640)
     _heartbeatReceiver = env.rpcEnv.setupEndpoint(
       HeartbeatReceiver.ENDPOINT_NAME, new HeartbeatReceiver(this))
 
+    
+    println("===SparkContext:Primary Constructor Creating DagScheduler and Task Scheduler\n")
     // Create and start the scheduler
     val (sched, ts) = SparkContext.createTaskScheduler(this, master, deployMode)
     _schedulerBackend = sched
@@ -504,6 +526,7 @@ class SparkContext(config: SparkConf) extends Logging {
     _dagScheduler = new DAGScheduler(this)
     _heartbeatReceiver.ask[Boolean](TaskSchedulerIsSet)
 
+    println("===SparkContext:Primary Constructor Starting Task Scheduler\n")
     // start TaskScheduler after taskScheduler sets DAGScheduler reference in DAGScheduler's
     // constructor
     _taskScheduler.start()
@@ -515,6 +538,7 @@ class SparkContext(config: SparkConf) extends Logging {
       System.setProperty("spark.ui.proxyBase", "/proxy/" + _applicationId)
     }
     _ui.foreach(_.setAppId(_applicationId))
+    println("===SparkContext:Primary Constructor Initializing Block Manager\n")
     _env.blockManager.initialize(_applicationId)
 
     // The metrics system for Driver need to be set spark.app.id to app ID.
@@ -717,6 +741,7 @@ class SparkContext(config: SparkConf) extends Logging {
       seq: Seq[T],
       numSlices: Int = defaultParallelism): RDD[T] = withScope {
     assertNotStopped()
+    println("===SparkContext:parallelize calling new ParallelCollectionRDD[T](this, seq, numSlices, Map[Int, Seq[String]]())\n")
     new ParallelCollectionRDD[T](this, seq, numSlices, Map[Int, Seq[String]]())
   }
 
@@ -802,6 +827,7 @@ class SparkContext(config: SparkConf) extends Logging {
   def makeRDD[T: ClassTag](
       seq: Seq[T],
       numSlices: Int = defaultParallelism): RDD[T] = withScope {
+    println("===SparkContext:makeRDD calling parallelize(seq, numSlices)\n")
     parallelize(seq, numSlices)
   }
 
@@ -829,6 +855,7 @@ class SparkContext(config: SparkConf) extends Logging {
       path: String,
       minPartitions: Int = defaultMinPartitions): RDD[String] = withScope {
     assertNotStopped()
+    println("\n===Reading a File: Inside textFile. Calling hadoopFile method\n")
     hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text],
       minPartitions).map(pair => pair._2.toString).setName(path)
   }
@@ -1031,11 +1058,13 @@ class SparkContext(config: SparkConf) extends Logging {
 
     // This is a hack to enforce loading hdfs-site.xml.
     // See SPARK-11227 for details.
+    println("===Reading a File: Inside hadoopFile. Calling FileSystem.getLocal(hadoopConfiguration) from Hadoop package org.apache.hadoop.fs\n")
     FileSystem.getLocal(hadoopConfiguration)
 
     // A Hadoop configuration can be about 10 KB, which is pretty big, so broadcast it.
     val confBroadcast = broadcast(new SerializableConfiguration(hadoopConfiguration))
     val setInputPathsFunc = (jobConf: JobConf) => FileInputFormat.setInputPaths(jobConf, path)
+    println("===Reading a File: Inside hadoopFile. Calling HadoopRDD \n")
     new HadoopRDD(
       this,
       confBroadcast,
@@ -1985,6 +2014,7 @@ class SparkContext(config: SparkConf) extends Logging {
    * has overridden the call site using `setCallSite()`, this will return the user's version.
    */
   private[spark] def getCallSite(): CallSite = {
+    println("===SparkContext: getCallSite. The position in user code from where the call to instantiate RDD is made\n")
     lazy val callSite = Utils.getCallSite()
     CallSite(
       Option(getLocalProperty(CallSite.SHORT_FORM)).getOrElse(callSite.shortForm),
@@ -2010,12 +2040,15 @@ class SparkContext(config: SparkConf) extends Logging {
     if (stopped.get()) {
       throw new IllegalStateException("SparkContext has been shutdown")
     }
+    println("===SparkContext: Inside runJob(RDD, function iter.toArray, partitions, resultHandler)\n")
+    println("===SparkContext: Inside runJob(RDD, function iter.toArray, partitions, resultHandler). calling getCallSite\n")
     val callSite = getCallSite
     val cleanedFunc = clean(func)
     logInfo("Starting job: " + callSite.shortForm)
     if (conf.getBoolean("spark.logLineage", false)) {
       logInfo("RDD's recursive dependencies:\n" + rdd.toDebugString)
     }
+    println("===SparkContext: Inside runJob(RDD, function iter.toArray, partitions, resultHandler). calling dagScheduler to run this job\n")
     dagScheduler.runJob(rdd, cleanedFunc, partitions, callSite, resultHandler, localProperties.get)
     progressBar.foreach(_.finishAll())
     rdd.doCheckpoint()
@@ -2056,6 +2089,7 @@ class SparkContext(config: SparkConf) extends Logging {
       func: Iterator[T] => U,
       partitions: Seq[Int]): Array[U] = {
     val cleanedFunc = clean(func)
+    println("===SparkContext: Inside runJob(RDD, (ctx: TaskContext, it: Iterator[T]) => cleanedFunc(it), partitions)\n")
     runJob(rdd, (ctx: TaskContext, it: Iterator[T]) => cleanedFunc(it), partitions)
   }
 
@@ -2081,6 +2115,7 @@ class SparkContext(config: SparkConf) extends Logging {
    * a result from one partition)
    */
   def runJob[T, U: ClassTag](rdd: RDD[T], func: Iterator[T] => U): Array[U] = {
+    println("===SparkContext: Inside runJob(RDD, function iter.toArray)\n")
     runJob(rdd, func, 0 until rdd.partitions.length)
   }
 
@@ -2281,6 +2316,7 @@ class SparkContext(config: SparkConf) extends Logging {
    * @return the cleaned closure
    */
   private[spark] def clean[F <: AnyRef](f: F, checkSerializable: Boolean = true): F = {
+    println("===SparkContext:clean[F <: AnyRef](f: F, checkSerializable: Boolean = true)\n")
     ClosureCleaner.clean(f, checkSerializable)
     f
   }
@@ -2550,6 +2586,7 @@ object SparkContext extends Logging {
   private[spark] def markPartiallyConstructed(
       sc: SparkContext,
       allowMultipleContexts: Boolean): Unit = {
+    println("===SparkContext:markPartiallyConstructed called at the beginning of primary constructor \n")
     SPARK_CONTEXT_CONSTRUCTOR_LOCK.synchronized {
       assertNoOtherContextIsRunning(sc, allowMultipleContexts)
       contextBeingConstructed = Some(sc)
@@ -2563,6 +2600,7 @@ object SparkContext extends Logging {
   private[spark] def setActiveContext(
       sc: SparkContext,
       allowMultipleContexts: Boolean): Unit = {
+    println("===SparkContext:setActiveContext called at the end of primary constructor \n")
     SPARK_CONTEXT_CONSTRUCTOR_LOCK.synchronized {
       assertNoOtherContextIsRunning(sc, allowMultipleContexts)
       contextBeingConstructed = None
@@ -2697,6 +2735,7 @@ object SparkContext extends Logging {
 
     master match {
       case "local" =>
+        
         val scheduler = new TaskSchedulerImpl(sc, MAX_LOCAL_TASK_FAILURES, isLocal = true)
         val backend = new LocalSchedulerBackend(sc.getConf, scheduler, 1)
         scheduler.initialize(backend)

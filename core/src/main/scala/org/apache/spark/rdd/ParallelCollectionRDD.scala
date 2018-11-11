@@ -99,6 +99,7 @@ private[spark] class ParallelCollectionRDD[T: ClassTag](
   }
 
   override def compute(s: Partition, context: TaskContext): Iterator[T] = {
+    println("===ParallelCollectionRDD:compute(s: Partition, context: TaskContext) started. Returning Iterator \n")
     new InterruptibleIterator(context, s.asInstanceOf[ParallelCollectionPartition[T]].iterator)
   }
 

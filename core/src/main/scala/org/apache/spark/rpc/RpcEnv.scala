@@ -51,8 +51,10 @@ private[spark] object RpcEnv {
       conf: SparkConf,
       securityManager: SecurityManager,
       clientMode: Boolean): RpcEnv = {
+    println("===RpcEnv:create Create a RpcEnv for Driver or Executor\n")
     val config = RpcEnvConfig(conf, name, bindAddress, advertiseAddress, port, securityManager,
       clientMode)
+    println("===RpcEnv:create calling NettyRpcEnvFactory\n")
     new NettyRpcEnvFactory().create(config)
   }
 }

@@ -2411,6 +2411,7 @@ private[spark] object Utils extends Logging {
    * overridden by the `SPARK_USER` environment variable.
    */
   def getCurrentUserName(): String = {
+    
     Option(System.getenv("SPARK_USER"))
       .getOrElse(UserGroupInformation.getCurrentUser().getShortUserName())
   }
@@ -2576,6 +2577,8 @@ private[spark] object Utils extends Logging {
    * only the "spark.jars" property.
    */
   def getUserJars(conf: SparkConf, isShell: Boolean = false): Seq[String] = {
+    println("===SparkContext:getUserJars getting user jars\n")
+    
     val sparkJars = conf.getOption("spark.jars")
     if (conf.get("spark.master") == "yarn" && isShell) {
       val yarnJars = conf.getOption("spark.yarn.dist.jars")

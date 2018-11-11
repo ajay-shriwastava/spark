@@ -58,6 +58,7 @@ private[spark] class HadoopPartition(rddId: Int, override val index: Int, s: Inp
    * @return a Map with the environment variables and corresponding values, it could be empty
    */
   def getPipeEnvVars(): Map[String, String] = {
+    println("\n=== HadoopRDD.HadoopPartition: Inside getPipeEnvVars. \n")
     val envVars: Map[String, String] = if (inputSplit.value.isInstanceOf[FileSplit]) {
       val is: FileSplit = inputSplit.value.asInstanceOf[FileSplit]
       // map_input_file is deprecated in favor of mapreduce_map_input_file but set both
@@ -136,6 +137,7 @@ class HadoopRDD[K, V](
 
   // Returns a JobConf that will be used on slaves to obtain input splits for Hadoop reads.
   protected def getJobConf(): JobConf = {
+    println("\n=== HadoopRDD.getJobConf: Starting. \n")
     val conf: Configuration = broadcastedConf.value.value
     if (shouldCloneJobConf) {
       // Hadoop Configuration objects are not thread-safe, which may lead to various problems if
@@ -177,6 +179,7 @@ class HadoopRDD[K, V](
   }
 
   protected def getInputFormat(conf: JobConf): InputFormat[K, V] = {
+    println("\n=== HadoopRDD.getInputFormat: Starting. \n")
     val newInputFormat = ReflectionUtils.newInstance(inputFormatClass.asInstanceOf[Class[_]], conf)
       .asInstanceOf[InputFormat[K, V]]
     newInputFormat match {
@@ -187,6 +190,7 @@ class HadoopRDD[K, V](
   }
 
   override def getPartitions: Array[Partition] = {
+    println("\n=== HadoopRDD.getPartitions: Starting. \n")
     val jobConf = getJobConf()
     // add the credentials here as this can be called before SparkContext initialized
     SparkHadoopUtil.get.addCredentials(jobConf)
@@ -200,6 +204,7 @@ class HadoopRDD[K, V](
   }
 
   override def compute(theSplit: Partition, context: TaskContext): InterruptibleIterator[(K, V)] = {
+    println("\n=== HadoopRDD.compute: Starting. \n")
     val iter = new NextIterator[(K, V)] {
 
       private val split = theSplit.asInstanceOf[HadoopPartition]
@@ -309,6 +314,7 @@ class HadoopRDD[K, V](
   def mapPartitionsWithInputSplit[U: ClassTag](
       f: (InputSplit, Iterator[(K, V)]) => Iterator[U],
       preservesPartitioning: Boolean = false): RDD[U] = {
+    println("\n=== HadoopRDD.mapPartitionsWithInputSplit: Starting. \n")
     new HadoopMapPartitionsWithSplitRDD(this, f, preservesPartitioning)
   }
 
@@ -319,14 +325,17 @@ class HadoopRDD[K, V](
         HadoopRDD.convertSplitLocationInfo(lsplit.getLocationInfo)
       case _ => None
     }
+    println("\n=== HadoopRDD.getPreferredLocations: Starting. \n")
     locs.getOrElse(hsplit.getLocations.filter(_ != "localhost"))
   }
 
   override def checkpoint() {
+    println("\n=== HadoopRDD.checkpoint: Nothing to do. Hadoop RDD should not be checkpointed.\n")
     // Do nothing. Hadoop RDD should not be checkpointed.
   }
 
   override def persist(storageLevel: StorageLevel): this.type = {
+    println("\n=== HadoopRDD.persist: Starting.\n")
     if (storageLevel.deserialized) {
       logWarning("Caching HadoopRDDs as deserialized objects usually leads to undesired" +
         " behavior because Hadoop's RecordReader reuses the same Writable object for all records." +
@@ -362,6 +371,7 @@ private[spark] object HadoopRDD extends Logging {
   /** Add Hadoop configuration specific to a single partition and attempt. */
   def addLocalConfiguration(jobTrackerId: String, jobId: Int, splitId: Int, attemptId: Int,
                             conf: JobConf) {
+    println("\n=== object HadoopRDD.addLocalConfiguration: Starting\n")
     val jobID = new JobID(jobTrackerId, jobId)
     val taId = new TaskAttemptID(new TaskID(jobID, TaskType.MAP, splitId), attemptId)
 
@@ -382,6 +392,8 @@ private[spark] object HadoopRDD extends Logging {
       preservesPartitioning: Boolean = false)
     extends RDD[U](prev) {
 
+    println("\n=== object HadoopRDD.HadoopMapPartitionsWithSplitRDD: Starting.\n")
+    
     override val partitioner = if (preservesPartitioning) firstParent[T].partitioner else None
 
     override def getPartitions: Array[Partition] = firstParent[T].partitions
@@ -395,6 +407,7 @@ private[spark] object HadoopRDD extends Logging {
 
   private[spark] def convertSplitLocationInfo(
        infos: Array[SplitLocationInfo]): Option[Seq[String]] = {
+    println("\n=== object HadoopRDD.convertSplitLocationInfo: Starting.\n")
     Option(infos).map(_.flatMap { loc =>
       val locationStr = loc.getLocation
       if (locationStr != "localhost") {

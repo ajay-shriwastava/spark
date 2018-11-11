@@ -281,9 +281,12 @@ abstract class RDD[T: ClassTag](
    * subclasses of RDD.
    */
   final def iterator(split: Partition, context: TaskContext): Iterator[T] = {
+    println("===RDD:iterator(split: Partition, context: TaskContext) Started \n")
     if (storageLevel != StorageLevel.NONE) {
+      println("===RDD:iterator calling getOrCompute(split, context) \n")
       getOrCompute(split, context)
     } else {
+      println("===RDD:iterator calling computeOrReadCheckpoint(split, context) \n")
       computeOrReadCheckpoint(split, context)
     }
   }
@@ -317,6 +320,7 @@ abstract class RDD[T: ClassTag](
    */
   private[spark] def computeOrReadCheckpoint(split: Partition, context: TaskContext): Iterator[T] =
   {
+    println("===RDD:iterator computeOrReadCheckpoint(split: Partition, context: TaskContext) started \n")
     if (isCheckpointedAndMaterialized) {
       firstParent[T].iterator(split, context)
     } else {
@@ -328,6 +332,7 @@ abstract class RDD[T: ClassTag](
    * Gets or computes an RDD partition. Used by RDD.iterator() when an RDD is cached.
    */
   private[spark] def getOrCompute(partition: Partition, context: TaskContext): Iterator[T] = {
+    println("===RDD:getOrCompute(partition: Partition, context: TaskContext) Started \n")
     val blockId = RDDBlockId(id, partition.index)
     var readCachedBlock = true
     // This method is called on executors, so we need call SparkEnv.get instead of sc.env.
@@ -791,7 +796,9 @@ abstract class RDD[T: ClassTag](
   def mapPartitions[U: ClassTag](
       f: Iterator[T] => Iterator[U],
       preservesPartitioning: Boolean = false): RDD[U] = withScope {
+    println("===RDD:mapPartitions started with parameters: func f, preserves Partiotioning. Calling sc.clean(f)\n")
     val cleanedF = sc.clean(f)
+    println("===RDD:mapPartitions creating MapPartitionsRDD (this, funct f, preservesPartitioning)\n")
     new MapPartitionsRDD(
       this,
       (context: TaskContext, index: Int, iter: Iterator[T]) => cleanedF(iter),
@@ -933,6 +940,7 @@ abstract class RDD[T: ClassTag](
    * all the data is loaded into the driver's memory.
    */
   def collect(): Array[T] = withScope {
+    println("===RDD: Inside collect. Calling sc.runJob(RDD, function iter.toArray)\n")
     val results = sc.runJob(this, (iter: Iterator[T]) => iter.toArray)
     Array.concat(results: _*)
   }
@@ -1476,8 +1484,10 @@ abstract class RDD[T: ClassTag](
     //
     // Therefore, here we provide an explicit Ordering `null` to make sure the compiler generate
     // same bytecodes for `saveAsTextFile`.
+    println("===RDD:saveAsTextFile(path: String) Started \n")
     val nullWritableClassTag = implicitly[ClassTag[NullWritable]]
     val textClassTag = implicitly[ClassTag[Text]]
+    println("===RDD:saveAsTextFile(path: String) calling mapPartitions passing anonymous function which takes an iterator[T] and returns an iterator[U] \n")
     val r = this.mapPartitions { iter =>
       val text = new Text()
       iter.map { x =>
@@ -1485,6 +1495,7 @@ abstract class RDD[T: ClassTag](
         (NullWritable.get(), text)
       }
     }
+    println("===RDD:saveAsTextFile(path: String) calling rddToPairRDDFunctions(r)(nullWritableClassTag, textClassTag, null).saveAsHadoopFile[TextOutputFormat[NullWritable, Text]](path) \n")
     RDD.rddToPairRDDFunctions(r)(nullWritableClassTag, textClassTag, null)
       .saveAsHadoopFile[TextOutputFormat[NullWritable, Text]](path)
   }

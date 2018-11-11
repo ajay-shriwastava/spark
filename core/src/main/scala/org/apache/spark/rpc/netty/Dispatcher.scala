@@ -58,7 +58,9 @@ private[netty] class Dispatcher(nettyEnv: NettyRpcEnv) extends Logging {
   private var stopped = false
 
   def registerRpcEndpoint(name: String, endpoint: RpcEndpoint): NettyRpcEndpointRef = {
+    println("===Dispatcher:registerRpcEndpoint creating  addr = RpcEndpointAddress(nettyEnv.address, name)" + "\n")
     val addr = RpcEndpointAddress(nettyEnv.address, name)
+    println("===Dispatcher:registerRpcEndpoint creating  endpointRef = new NettyRpcEndpointRef(nettyEnv.conf, addr, nettyEnv)" + "\n")
     val endpointRef = new NettyRpcEndpointRef(nettyEnv.conf, addr, nettyEnv)
     synchronized {
       if (stopped) {
@@ -106,6 +108,7 @@ private[netty] class Dispatcher(nettyEnv: NettyRpcEnv) extends Logging {
    * This can be used to make network events known to all end points (e.g. "a new node connected").
    */
   def postToAll(message: InboxMessage): Unit = {
+    println("===Dispatcher:postToAll creating  Sending message: " + message + " to all end points. \n")
     val iter = endpoints.keySet().iterator()
     while (iter.hasNext) {
       val name = iter.next
@@ -118,6 +121,7 @@ private[netty] class Dispatcher(nettyEnv: NettyRpcEnv) extends Logging {
     val rpcCallContext =
       new RemoteNettyRpcCallContext(nettyEnv, callback, message.senderAddress)
     val rpcMessage = RpcMessage(message.senderAddress, message.content, rpcCallContext)
+    println("===Dispatcher:postRemoteMessage posting a message sent by a remote end point.\n")
     postMessage(message.receiver.name, rpcMessage, (e) => callback.onFailure(e))
   }
 
