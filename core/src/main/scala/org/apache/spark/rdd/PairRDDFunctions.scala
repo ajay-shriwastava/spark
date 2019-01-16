@@ -958,6 +958,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def saveAsHadoopFile[F <: OutputFormat[K, V]](
       path: String)(implicit fm: ClassTag[F]): Unit = self.withScope {
+    println("===PairRDDFunctions:saveAsHadoopFile[F <: OutputFormat[K, V]](path: String)(implicit fm: ClassTag[F]): Unit  calling saveAsHadoopFile(path, keyClass, valueClass, fm.runtimeClass.asInstanceOf[Class[F]])\n")
     saveAsHadoopFile(path, keyClass, valueClass, fm.runtimeClass.asInstanceOf[Class[F]])
   }
 
@@ -1034,6 +1035,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       conf: JobConf = new JobConf(self.context.hadoopConfiguration),
       codec: Option[Class[_ <: CompressionCodec]] = None): Unit = self.withScope {
     // Rename this as hadoopConf internally to avoid shadowing (see SPARK-2038).
+    println("===saveAsHadoopFile(path, keyClass, valueClass, outputFormatClass, conf, codec) Started \n")
     val hadoopConf = conf
     hadoopConf.setOutputKeyClass(keyClass)
     hadoopConf.setOutputValueClass(valueClass)
@@ -1046,7 +1048,9 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       hadoopConf.set("mapreduce.output.fileoutputformat.compress.type",
         CompressionType.BLOCK.toString)
     }
-
+    
+    println("===saveAsHadoopFile: instantiating and setting OutputCommitter  \n")
+    
     // Use configured output committer if already set
     if (conf.getOutputCommitter == null) {
       hadoopConf.setOutputCommitter(classOf[FileOutputCommitter])
@@ -1067,6 +1071,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
 
     FileOutputFormat.setOutputPath(hadoopConf,
       SparkHadoopWriterUtils.createPathFromString(path, hadoopConf))
+    println("===PairRDDFunctions:saveAsHadoopFile: calling saveAsHadoopDataset(hadoopConf) \n")
     saveAsHadoopDataset(hadoopConf)
   }
 
@@ -1095,6 +1100,7 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
    */
   def saveAsHadoopDataset(conf: JobConf): Unit = self.withScope {
     // Rename this as hadoopConf internally to avoid shadowing (see SPARK-2038).
+    println("===PairRDDFunctions:saveAsHadoopDataset(hadoopConf) \n")
     val hadoopConf = conf
     val outputFormatInstance = hadoopConf.getOutputFormat
     val keyClass = hadoopConf.getOutputKeyClass
@@ -1118,8 +1124,10 @@ class PairRDDFunctions[K, V](self: RDD[(K, V)])
       val ignoredFs = FileSystem.get(hadoopConf)
       hadoopConf.getOutputFormat.checkOutputSpecs(ignoredFs, hadoopConf)
     }
-
+    
+    println("===PairRDDFunctions:saveAsHadoopDataset(hadoopConf) creating SparkHadoopWriter \n")
     val writer = new SparkHadoopWriter(hadoopConf)
+    println("===PairRDDFunctions:saveAsHadoopDataset(hadoopConf) calling writer.preSetup() \n")
     writer.preSetup()
 
     val writeToFile = (context: TaskContext, iter: Iterator[(K, V)]) => {

@@ -56,10 +56,13 @@ class SparkHadoopWriter(jobConf: JobConf) extends Logging with Serializable {
   @transient private var taskContext: TaskAttemptContext = null
 
   def preSetup() {
+    println("===SparkHadoopWriter:preSetup calling  setIDs(jobid: Int, splitid: Int, attemptid: Int)  \n")
     setIDs(0, 0, 0)
+    println("===SparkHadoopWriter:preSetup calling  HadoopRDD.addLocalConfiguration(jobTrackerId: String, jobId: Int, splitId: Int, attemptId: Int, conf: JobConf) \n")
     HadoopRDD.addLocalConfiguration("", 0, 0, 0, conf.value)
-
+    println("===SparkHadoopWriter:preSetup calling  getJobContext() \n")
     val jCtxt = getJobContext()
+    println("===SparkHadoopWriter:preSetup returning getOutputCommitter().setupJob(jCtxt)\n")
     getOutputCommitter().setupJob(jCtxt)
   }
 
@@ -122,6 +125,7 @@ class SparkHadoopWriter(jobConf: JobConf) extends Logging with Serializable {
 
   private def getOutputCommitter(): OutputCommitter = {
     if (committer == null) {
+      println("===SparkHadoopWriter:getOutputCommitter getting value of mapred.output.committer.class from  org.apache.hadoop.mapred.JobConf \n")
       committer = conf.value.getOutputCommitter
     }
     committer
@@ -129,6 +133,7 @@ class SparkHadoopWriter(jobConf: JobConf) extends Logging with Serializable {
 
   private def getJobContext(): JobContext = {
     if (jobContext == null) {
+      println("===SparkHadoopWriter:preSetup creating new org.apache.hadoop.mapred.JobContextImpl(conf.value, jID.value) \n")
       jobContext = new JobContextImpl(conf.value, jID.value)
     }
     jobContext

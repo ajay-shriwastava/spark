@@ -2040,7 +2040,6 @@ class SparkContext(config: SparkConf) extends Logging {
     if (stopped.get()) {
       throw new IllegalStateException("SparkContext has been shutdown")
     }
-    println("===SparkContext: Inside runJob(RDD, function iter.toArray, partitions, resultHandler)\n")
     println("===SparkContext: Inside runJob(RDD, function iter.toArray, partitions, resultHandler). calling getCallSite\n")
     val callSite = getCallSite
     val cleanedFunc = clean(func)
