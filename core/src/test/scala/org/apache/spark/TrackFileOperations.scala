@@ -39,6 +39,14 @@ import org.apache.spark.util.Utils
 class TrackFileOperations extends SparkFunSuite with LocalSparkContext {
   var tempDir: File = _
 
+  def time[R](block: => R, str: String): R = {
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    println("Elapsed time to execute: " + str +  " is " + (t1 - t0)/1000000 + "ms")
+    result
+}
+  
   override def beforeEach() {
     super.beforeEach()
     tempDir = Utils.createTempDir()
@@ -56,7 +64,7 @@ class TrackFileOperations extends SparkFunSuite with LocalSparkContext {
     
     
     println("===TrackFileOperations:test(\"text files\") calling SparkContext(\"local\", \"test\")\n")
-    sc = new SparkContext("local", "test")
+    sc = time ({ new SparkContext("local", "test") }, "Creating Spark Context")
     println("===TrackFileOperations:test(\"text files\") creating outputDir\n")
     val outputDir = new File(tempDir, "output").getAbsolutePath
     println("===TrackFileOperations:test(\"text files\") calling sc.makeRDD(1 to 4)\n")

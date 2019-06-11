@@ -21,6 +21,7 @@
 .scala_dependencies
 .settings
 /lib/
+generated/
 R-unit-tests.log
 R/unit-tests.out
 R/cran-check.out
